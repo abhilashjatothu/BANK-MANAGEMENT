@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Transaction History - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Transaction History & Statements</h2>
+            <p class="text-muted mb-0">Audited financial records and transaction logs</p>
+        </div>
+        <div class="btn-group">
+            <a th:href="@{/transactions/deposit}" class="btn btn-outline-success"><i class="bi bi-arrow-down-circle me-1"></i> Deposit</a>
+            <a th:href="@{/transactions/withdraw}" class="btn btn-outline-danger"><i class="bi bi-arrow-up-circle me-1"></i> Withdraw</a>
+            <a th:href="@{/transactions/transfer}" class="btn btn-primary"><i class="bi bi-send me-1"></i> Transfer</a>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card bank-card mb-4">
+        <div class="card-body">
+            <form th:action="@{/transactions/history}" method="get" class="row g-3 align-items-end">
+                <!-- Account Filter -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Account Filter</label>
+                    <select name="accountId" class="form-select form-select-sm">
+                        <option value="">All Accounts</option>
+                        <option th:each="acc : ${accounts}"
+                                th:value="${acc.accountId}"
+                                th:text="${acc.accountNumber} + ' (' + ${acc.customer.name} + ')'"
+                                th:selected="${selectedAccountId != null && selectedAccountId == acc.accountId}">
+                            101010101010
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Type Filter -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold text-muted">Transaction Type</label>
+                    <select name="type" class="form-select form-select-sm">
+                        <option value="">All Types</option>
+                        <option th:each="t : ${transactionTypes}"
+                                th:value="${t}"
+                                th:text="${t}"
+                                th:selected="${selectedType != null && selectedType == t}">
+                            DEPOSIT
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Date Range Filters -->
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">Start Date</label>
+                    <input type="date" name="startDate" th:value="${startDate}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold text-muted">End Date</label>
+                    <input type="date" name="endDate" th:value="${endDate}" class="form-control form-control-sm">
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                    <a th:href="@{/transactions/history}" class="btn btn-sm btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Transactions Table Card -->
+    <div class="card bank-card">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Statement Logs</h5>
+            <span class="badge bg-light text-muted border" th:text="${totalElements} + ' total records'">0 total records</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Reference No</th>
+                            <th>Date & Time</th>
+                            <th>Account</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tx : ${transactions}">
+                            <td class="ps-4 fw-bold text-primary small" th:text="${tx.referenceNo}">TXN-123</td>
+                            <td class="small" th:text="${#temporals.format(tx.dateTime, 'yyyy-MM-dd HH:mm:ss')}">2026-10-11 12:00:00</td>
+                            <td>
+                                <a th:href="@{/accounts/view/{num}(num=${tx.account.accountNumber})}" class="text-decoration-none fw-semibold" th:text="${tx.account.accountNumber}">101010101010</a>
+                            </td>
+                            <td class="text-secondary small" th:text="${tx.description}">Memo</td>
+                            <td>
+                                <span th:if="${tx.type.name() == 'DEPOSIT'}" class="badge badge-deposit"><i class="bi bi-arrow-down me-1"></i>Deposit</span>
+                                <span th:if="${tx.type.name() == 'WITHDRAWAL'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up me-1"></i>Withdrawal</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_DEBIT'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up-right me-1"></i>Transfer Debit</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_CREDIT'}" class="badge badge-transfer"><i class="bi bi-arrow-down-left me-1"></i>Transfer Credit</span>
+                            </td>
+                            <td class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td class="text-muted" th:text="'$' + ${#numbers.formatDecimal(tx.balanceAfter, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span th:if="${tx.status.name() == 'SUCCESS'}" class="badge bg-success">Success</span>
+                                <span th:if="${tx.status.name() == 'FAILED'}" class="badge bg-danger">Failed</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(transactions)}">
+                            <td colspan="8" class="text-center py-4 text-muted">No transactions matched the criteria.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center py-3" th:if="${totalPages > 1}">
+            <div class="small text-muted">
+                Showing page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/transactions/history(page=${currentPage - 1}, accountId=${selectedAccountId}, type=${selectedType}, startDate=${startDate}, endDate=${endDate})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/transactions/history(page=${i}, accountId=${selectedAccountId}, type=${selectedType}, startDate=${startDate}, endDate=${endDate})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/transactions/history(page=${currentPage + 1}, accountId=${selectedAccountId}, type=${selectedType}, startDate=${startDate}, endDate=${endDate})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="'Account ' + ${account.accountNumber} + ' - Apex Bank'">Account Details</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <h2 class="fw-bold text-dark mb-0" th:text="${account.accountNumber}">101010101010</h2>
+                <span th:if="${account.status.name() == 'ACTIVE'}" class="badge badge-active fs-6">Active</span>
+                <span th:if="${account.status.name() == 'FROZEN'}" class="badge badge-frozen fs-6">Frozen</span>
+                <span th:if="${account.status.name() == 'CLOSED'}" class="badge badge-closed fs-6">Closed</span>
+            </div>
+            <p class="text-muted mb-0">
+                Holder: <strong th:text="${account.customer.name}">Customer Name</strong> |
+                Type: <span class="badge bg-light text-dark border" th:text="${account.accountType}">SAVINGS</span> |
+                Opened: <span th:text="${#temporals.format(account.createdAt, 'yyyy-MM-dd HH:mm')}">Date</span>
+            </p>
+        </div>
+        <div class="btn-group">
+            <a th:if="${account.status.name() == 'ACTIVE'}" th:href="@{/transactions/deposit(accountNumber=${account.accountNumber})}" class="btn btn-outline-success">
+                <i class="bi bi-arrow-down-circle me-1"></i> Deposit
+            </a>
+            <a th:if="${account.status.name() == 'ACTIVE'}" th:href="@{/transactions/withdraw(accountNumber=${account.accountNumber})}" class="btn btn-outline-danger">
+                <i class="bi bi-arrow-up-circle me-1"></i> Withdraw
+            </a>
+            <a th:if="${account.status.name() == 'ACTIVE'}" th:href="@{/transactions/transfer(fromAccount=${account.accountNumber})}" class="btn btn-primary">
+                <i class="bi bi-send me-1"></i> Transfer
+            </a>
+        </div>
+    </div>
+
+    <!-- Balance & Controls Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-7 col-lg-8">
+            <div class="card stat-card bg-primary text-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-white-50 text-uppercase small fw-semibold">Current Available Balance</span>
+                        <h1 class="display-5 fw-bold mb-0" th:text="'$' + ${#numbers.formatDecimal(account.balance, 1, 'COMMA', 2, 'POINT')}">$0.00</h1>
+                    </div>
+                    <i class="bi bi-bank fs-1 text-white-50"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Status Controller -->
+        <div class="col-md-5 col-lg-4" sec:authorize="hasAnyRole('ADMIN', 'EMPLOYEE')">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent py-2">
+                    <span class="fw-semibold small text-muted"><i class="bi bi-gear me-1"></i>Manage Account Status</span>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/accounts/status/{num}(num=${account.accountNumber})}" method="post">
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Change Status</label>
+                            <select name="status" class="form-select form-select-sm">
+                                <option th:each="st : ${allStatuses}"
+                                        th:value="${st}"
+                                        th:text="${st}"
+                                        th:selected="${st == account.status}">
+                                    ACTIVE
+                                </option>
+                            </select>
+                            <small class="text-muted d-block mt-1">Closing requires zero balance.</small>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-secondary w-100">Update Status</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Statement Table -->
+    <div class="card bank-card">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0"><i class="bi bi-receipt text-primary me-2"></i>Account Statement & Activity</h5>
+            <span class="text-muted small">Showing latest statement records</span>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Date & Time</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tx : ${transactions}">
+                            <td class="ps-4 fw-semibold text-primary" th:text="${tx.referenceNo}">TXN-123</td>
+                            <td th:text="${#temporals.format(tx.dateTime, 'yyyy-MM-dd HH:mm')}">2026-10-11</td>
+                            <td th:text="${tx.description}">Description</td>
+                            <td>
+                                <span th:if="${tx.type.name() == 'DEPOSIT'}" class="badge badge-deposit"><i class="bi bi-arrow-down me-1"></i>Deposit</span>
+                                <span th:if="${tx.type.name() == 'WITHDRAWAL'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up me-1"></i>Withdrawal</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_DEBIT'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up-right me-1"></i>Transfer Debit</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_CREDIT'}" class="badge badge-transfer"><i class="bi bi-arrow-down-left me-1"></i>Transfer Credit</span>
+                            </td>
+                            <td class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td class="text-muted" th:text="'$' + ${#numbers.formatDecimal(tx.balanceAfter, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span th:if="${tx.status.name() == 'SUCCESS'}" class="badge bg-success">Success</span>
+                                <span th:if="${tx.status.name() == 'FAILED'}" class="badge bg-danger">Failed</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(transactions)}">
+                            <td colspan="7" class="text-center py-4 text-muted">No transactions recorded for this account.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center py-3" th:if="${totalPages > 1}">
+            <div class="small text-muted">
+                Page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounts/view/{num}(num=${account.accountNumber}, page=${currentPage - 1})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/accounts/view/{num}(num=${account.accountNumber}, page=${i})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounts/view/{num}(num=${account.accountNumber}, page=${currentPage + 1})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Apex Bank</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="login-bg">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-5">
+                <div class="card login-card p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                            <i class="bi bi-bank2 fs-1 text-primary"></i>
+                        </div>
+                        <h3 class="fw-bold text-dark">Apex Bank</h3>
+                        <p class="text-muted small">Enter your credentials to access the banking portal</p>
+                    </div>
+
+                    <!-- Alerts -->
+                    <div th:if="${errorMessage}" class="alert alert-danger py-2 small d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-octagon-fill me-2 fs-6"></i>
+                        <span th:text="${errorMessage}">Invalid username or password.</span>
+                    </div>
+
+                    <div th:if="${logoutMessage}" class="alert alert-success py-2 small d-flex align-items-center" role="alert">
+                        <i class="bi bi-check-circle-fill me-2 fs-6"></i>
+                        <span th:text="${logoutMessage}">You have been logged out.</span>
+                    </div>
+
+                    <div th:if="${successMessage}" class="alert alert-success py-2 small d-flex align-items-center" role="alert">
+                        <i class="bi bi-check-circle-fill me-2 fs-6"></i>
+                        <span th:text="${successMessage}">Operation completed successfully.</span>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form th:action="@{/login}" method="post">
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="mb-3">
+                            <label for="username" class="form-label small fw-semibold text-secondary">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                                <input type="text" id="username" name="username" class="form-control border-start-0" placeholder="Enter username" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="password" class="form-label small fw-semibold text-secondary mb-0">Password</label>
+                                <a th:href="@{/forgot-password}" class="text-decoration-none small text-primary fw-medium">Forgot Password?</a>
+                            </div>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                                <input type="password" id="password" name="password" class="form-control border-start-0" placeholder="Enter password" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 shadow-sm mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> Sign In
+                        </button>
+                    </form>
+
+                    <!-- Sign Up Footer -->
+                    <div class="text-center pt-3 border-top">
+                        <p class="text-muted small mb-0">
+                            Don't have an account? 
+                            <a th:href="@{/register}" class="text-primary fw-bold text-decoration-none ms-1">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Bank Accounts - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">
+                <span th:if="${isCustomerView}">My Bank Accounts</span>
+                <span th:if="${!isCustomerView}">Bank Accounts Directory</span>
+            </h2>
+            <p class="text-muted mb-0">Manage customer bank accounts, balances, and operational statuses</p>
+        </div>
+        <a sec:authorize="hasAnyRole('ADMIN', 'EMPLOYEE')" th:href="@{/accounts/new}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Open New Account
+        </a>
+    </div>
+
+    <!-- Filter Card (Staff Only) -->
+    <div class="card bank-card mb-4" th:if="${!isCustomerView}">
+        <div class="card-body">
+            <form th:action="@{/accounts}" method="get" class="row g-2 align-items-center">
+                <div class="col-md-9">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" name="keyword" th:value="${keyword}" class="form-control" placeholder="Search by 12-digit account number or customer name...">
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-secondary w-100">Search</button>
+                    <a th:href="@{/accounts}" class="btn btn-outline-secondary">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Accounts Table Card -->
+    <div class="card bank-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Account Number</th>
+                            <th>Customer Owner</th>
+                            <th>Account Type</th>
+                            <th>Current Balance</th>
+                            <th>Status</th>
+                            <th>Opened Date</th>
+                            <th class="text-end pe-4">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="acc : ${accounts}">
+                            <td class="ps-4 fw-bold">
+                                <a th:href="@{/accounts/view/{num}(num=${acc.accountNumber})}" class="text-decoration-none text-primary" th:text="${acc.accountNumber}">101010101010</a>
+                            </td>
+                            <td>
+                                <a th:if="${!isCustomerView}" th:href="@{/customers/view/{id}(id=${acc.customer.customerId})}" class="text-decoration-none text-dark fw-semibold" th:text="${acc.customer.name}">Customer Name</a>
+                                <span th:if="${isCustomerView}" class="fw-semibold text-dark" th:text="${acc.customer.name}">Customer Name</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${acc.accountType}">SAVINGS</span>
+                            </td>
+                            <td class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(acc.balance, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span th:if="${acc.status.name() == 'ACTIVE'}" class="badge badge-active">Active</span>
+                                <span th:if="${acc.status.name() == 'FROZEN'}" class="badge badge-frozen">Frozen</span>
+                                <span th:if="${acc.status.name() == 'CLOSED'}" class="badge badge-closed">Closed</span>
+                            </td>
+                            <td th:text="${#temporals.format(acc.createdAt, 'yyyy-MM-dd')}">2026-10-11</td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <a th:href="@{/accounts/view/{num}(num=${acc.accountNumber})}" class="btn btn-outline-secondary" title="View Statement">
+                                        <i class="bi bi-eye"></i> Details
+                                    </a>
+                                    <a th:if="${acc.status.name() == 'ACTIVE'}" th:href="@{/transactions/deposit(accountNumber=${acc.accountNumber})}" class="btn btn-outline-success" title="Deposit">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </a>
+                                    <a th:if="${acc.status.name() == 'ACTIVE'}" th:href="@{/transactions/withdraw(accountNumber=${acc.accountNumber})}" class="btn btn-outline-danger" title="Withdraw">
+                                        <i class="bi bi-dash-lg"></i>
+                                    </a>
+                                    <a th:if="${acc.status.name() == 'ACTIVE'}" th:href="@{/transactions/transfer(fromAccount=${acc.accountNumber})}" class="btn btn-outline-primary" title="Transfer">
+                                        <i class="bi bi-send"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(accounts)}">
+                            <td colspan="7" class="text-center py-4 text-muted">No accounts found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="card-footer bg-transparent d-flex justify-content-between align-items-center py-3" th:if="${totalPages > 1}">
+            <div class="small text-muted">
+                Showing page <span th:text="${currentPage + 1}">1</span> of <span th:text="${totalPages}">1</span>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounts(page=${currentPage - 1}, keyword=${keyword})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${currentPage == i} ? 'active'">
+                        <a class="page-link" th:href="@{/accounts(page=${i}, keyword=${keyword})}" th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                        <a class="page-link" th:href="@{/accounts(page=${currentPage + 1}, keyword=${keyword})}">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+</body>
+</html>

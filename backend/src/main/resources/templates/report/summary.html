@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Financial Reports & Analytics - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Financial Reports & Summaries</h2>
+            <p class="text-muted mb-0">Audited Bank Analytics, Capital Reserves, and Volume Distributions</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i> Print / Export Report
+        </button>
+    </div>
+
+    <!-- Overview Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Customers</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.totalCustomers}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Accounts</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.totalAccounts}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info me-3">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Reserves</span>
+                        <h3 class="fw-bold mb-0" th:text="'$' + ${#numbers.formatDecimal(summary.totalBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Today's Transactions</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.todayTransactionCount}">0</h3>
+                        <small class="text-muted" th:text="'Vol: $' + ${#numbers.formatDecimal(summary.todayTransactionVolume, 1, 'COMMA', 2, 'POINT')}">Vol: $0.00</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breakdown Grid -->
+    <div class="row g-4 mb-4">
+        <!-- Transaction Totals Per Type Table -->
+        <div class="col-lg-6">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i>Transaction Volumes by Type</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Operation Type</th>
+                                    <th class="text-center">Count</th>
+                                    <th class="text-end pe-4">Total Amount Volume</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="row : ${totalsPerType}">
+                                    <td class="ps-4">
+                                        <span th:if="${row.type == 'DEPOSIT'}" class="badge badge-deposit"><i class="bi bi-arrow-down me-1"></i>Deposit</span>
+                                        <span th:if="${row.type == 'WITHDRAWAL'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up me-1"></i>Withdrawal</span>
+                                        <span th:if="${row.type == 'TRANSFER_DEBIT'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up-right me-1"></i>Transfer Debit</span>
+                                        <span th:if="${row.type == 'TRANSFER_CREDIT'}" class="badge badge-transfer"><i class="bi bi-arrow-down-left me-1"></i>Transfer Credit</span>
+                                    </td>
+                                    <td class="text-center fw-semibold" th:text="${row.count}">0</td>
+                                    <td class="text-end pe-4 fw-bold" th:text="'$' + ${#numbers.formatDecimal(row.totalAmount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(totalsPerType)}">
+                                    <td colspan="3" class="text-center py-4 text-muted">No completed transactions on record.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Distribution Summary -->
+        <div class="col-lg-6">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill text-success me-2"></i>Account Status & Classification</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <span class="text-muted small text-uppercase d-block mb-1">Active Accounts</span>
+                                <h3 class="fw-bold text-success mb-0" th:text="${summary.activeAccounts}">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <span class="text-muted small text-uppercase d-block mb-1">Frozen Accounts</span>
+                                <h3 class="fw-bold text-warning mb-0" th:text="${summary.frozenAccounts}">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <span class="text-muted small text-uppercase d-block mb-1">Closed Accounts</span>
+                                <h3 class="fw-bold text-danger mb-0" th:text="${summary.closedAccounts}">0</h3>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3 text-center">
+                                <span class="text-muted small text-uppercase d-block mb-1">Savings vs Current</span>
+                                <h4 class="fw-bold text-dark mb-0">
+                                    <span th:text="${summary.savingsAccountsCount}">0</span> / <span th:text="${summary.currentAccountsCount}">0</span>
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

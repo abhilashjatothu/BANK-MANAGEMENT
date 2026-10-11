@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Withdraw Funds - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card bank-card">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0 text-danger">
+                        <i class="bi bi-arrow-up-circle me-2"></i> Cash Withdrawal
+                    </h4>
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Debit Operation</span>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/transactions/withdraw}" th:object="${withdrawForm}" method="post">
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <!-- Account Selection -->
+                        <div class="mb-3">
+                            <label for="accountNumber" class="form-label fw-semibold">Source Account Number <span class="text-danger">*</span></label>
+                            
+                            <div th:if="${userAccounts != null && !#lists.isEmpty(userAccounts)}">
+                                <select id="accountNumber" th:field="*{accountNumber}" class="form-select"
+                                        th:classappend="${#fields.hasErrors('accountNumber')} ? 'is-invalid' : ''">
+                                    <option value="">-- Select Bank Account --</option>
+                                    <option th:each="acc : ${userAccounts}"
+                                            th:value="${acc.accountNumber}"
+                                            th:text="${acc.accountNumber} + ' (' + ${acc.accountType} + ' - Bal: $' + ${#numbers.formatDecimal(acc.balance, 1, 'COMMA', 2, 'POINT')} + ')'"
+                                            th:selected="${acc.accountNumber == withdrawForm.accountNumber}">
+                                        101010101010 (SAVINGS - $5,000)
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div th:if="${userAccounts == null || #lists.isEmpty(userAccounts)}">
+                                <input type="text" id="accountNumberInput" th:field="*{accountNumber}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('accountNumber')} ? 'is-invalid' : ''" placeholder="Enter 12-digit account number">
+                            </div>
+
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('accountNumber')}" th:errors="*{accountNumber}">Account is required</div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label for="amount" class="form-label fw-semibold">Withdrawal Amount ($) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">$</span>
+                                <input type="number" step="0.01" min="0.01" id="amount" th:field="*{amount}" class="form-control form-control-lg fw-bold"
+                                       th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid' : ''" placeholder="0.00">
+                            </div>
+                            <small class="text-muted">Overdrafts are rejected. Account must have sufficient balance.</small>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount error</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Transaction Note / Description</label>
+                            <input type="text" id="description" th:field="*{description}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('description')} ? 'is-invalid' : ''" placeholder="e.g. Branch ATM Cash Withdrawal">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-check2-circle me-1"></i> Confirm Withdrawal
+                            </button>
+                            <a th:href="@{/dashboard}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

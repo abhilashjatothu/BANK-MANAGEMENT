@@ -1,0 +1,187 @@
+/* Custom CSS for Modern Bank Management System */
+:root {
+    --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    --accent-gradient: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    --hover-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.12);
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background-color: #f4f6f9;
+    color: #334155;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1 0 auto;
+}
+
+/* Navbar */
+.navbar-bank {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-bank .navbar-brand {
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+    color: #ffffff !important;
+}
+
+.navbar-bank .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+    padding: 0.5rem 0.9rem;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.navbar-bank .nav-link:hover,
+.navbar-bank .nav-link.active {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* Stat Cards */
+.stat-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--hover-shadow);
+}
+
+.stat-icon-wrapper {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+/* Content Cards */
+.bank-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    background: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+.bank-card .card-header {
+    background: transparent;
+    border-bottom: 1px solid #eef2f6;
+    padding: 1.1rem 1.4rem;
+    font-weight: 600;
+}
+
+.bank-card .card-body {
+    padding: 1.4rem;
+}
+
+/* Badges */
+.badge-active {
+    background-color: #d1fae5;
+    color: #065f46;
+    font-weight: 600;
+}
+
+.badge-frozen {
+    background-color: #fef3c7;
+    color: #92400e;
+    font-weight: 600;
+}
+
+.badge-closed {
+    background-color: #fee2e2;
+    color: #991b1b;
+    font-weight: 600;
+}
+
+.badge-deposit {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-withdrawal {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-transfer {
+    background-color: #e0e7ff;
+    color: #3730a3;
+}
+
+/* Tables */
+.table thead th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-top: none;
+}
+
+.table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Forms */
+.form-control:focus, .form-select:focus {
+    border-color: #2a5298;
+    box-shadow: 0 0 0 0.25rem rgba(42, 82, 152, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #162c54 0%, #1e3c72 100%);
+    transform: translateY(-1px);
+}
+
+/* Footer */
+footer.bank-footer {
+    background-color: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    padding: 1.25rem 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Login Page Hero */
+.login-bg {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-card {
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    background: #ffffff;
+    border: none;
+    overflow: hidden;
+}

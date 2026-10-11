@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="layout (title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">Apex Bank Management System</title>
+    
+    <!-- Bootstrap 5 CSS via WebJar -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.3/css/bootstrap.min.css}">
+    <!-- Bootstrap Icons via WebJar -->
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css}">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Global Navigation -->
+    <div th:replace="~{layout/navbar :: navbar}"></div>
+
+    <!-- Main Container -->
+    <main class="main-content flex-grow-1 py-4">
+        <div class="container-fluid px-4">
+            
+            <!-- Global Flash Messages -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill fs-5 me-2"></i>
+                <div th:text="${successMessage}">Success operation completed.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+                <div th:text="${errorMessage}">An error occurred during operation.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <div th:if="${infoMessage}" class="alert alert-info alert-dismissible fade show shadow-sm d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle-fill fs-5 me-2"></i>
+                <div th:text="${infoMessage}">Information alert.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Page Specific Content -->
+            <div th:replace="${content}"></div>
+        </div>
+    </main>
+
+    <!-- Global Footer -->
+    <div th:replace="~{layout/footer :: footer}"></div>
+
+    <!-- Bootstrap 5 Bundle JS via WebJar -->
+    <script th:src="@{/webjars/bootstrap/5.3.3/js/bootstrap.bundle.min.js}"></script>
+    <!-- Custom Script -->
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

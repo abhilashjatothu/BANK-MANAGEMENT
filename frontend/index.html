@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Bank - Centralized Management Portal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <script>
+    if (!localStorage.getItem('apex_current_user')) {
+      window.location.href = 'login.html';
+    }
+  </script>
+
+  <!-- Top Glass Navigation -->
+  <nav class="navbar">
+    <a href="#" class="nav-brand">
+      <i class="bi bi-bank2"></i>
+      <span>Apex Bank</span>
+    </a>
+
+    <ul class="nav-links">
+      <li><button class="nav-btn active" data-view="viewDashboard"><i class="bi bi-speedometer2"></i> Dashboard</button></li>
+      <li><button class="nav-btn" data-view="viewCustomers"><i class="bi bi-people"></i> Customers</button></li>
+      <li><button class="nav-btn" data-view="viewAccounts"><i class="bi bi-wallet2"></i> Accounts</button></li>
+      <li><button class="nav-btn" data-view="viewTransactions"><i class="bi bi-clock-history"></i> Statements</button></li>
+    </ul>
+
+    <div class="nav-right">
+      <span id="apiStatusBadge" class="api-status-badge api-mock">Checking API...</span>
+      <select class="role-selector" id="roleSelector" onchange="alert('Switched UI perspective to: ' + this.value)">
+        <option value="ADMIN">Role: Administrator</option>
+        <option value="EMPLOYEE">Role: Branch Teller</option>
+        <option value="CUSTOMER">Role: Demo Customer</option>
+      </select>
+      <button class="btn btn-outline" style="padding:0.4rem 0.75rem;font-size:0.85rem;" onclick="localStorage.removeItem('apex_current_user'); window.location.href='login.html';">
+        <i class="bi bi-box-arrow-right"></i> Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="container">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="viewDashboard" class="view-panel">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Financial Dashboard</h1>
+          <p>Real-time capital reserves, operational metrics, and banking workflows</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="actions-bar">
+        <button class="btn btn-primary" data-open-modal="modalNewAccount"><i class="bi bi-plus-circle"></i> Open Account</button>
+        <button class="btn btn-outline" data-open-modal="modalNewCustomer"><i class="bi bi-person-plus"></i> New Customer</button>
+        <button class="btn btn-success" data-open-modal="modalDeposit"><i class="bi bi-arrow-down-circle"></i> Deposit Cash</button>
+        <button class="btn btn-danger" data-open-modal="modalWithdraw"><i class="bi bi-arrow-up-circle"></i> Withdraw Cash</button>
+        <button class="btn btn-primary" data-open-modal="modalTransfer"><i class="bi bi-send"></i> Inter-Account Transfer</button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#eff6ff;color:#2563eb;">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Customers</span>
+            <span class="stat-value" id="statTotalCustomers">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#ecfdf5;color:#059669;">
+            <i class="bi bi-credit-card-2-front-fill"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Accounts</span>
+            <span class="stat-value" id="statTotalAccounts">0</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f0fdf4;color:#16a34a;">
+            <i class="bi bi-cash-stack"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Total Vault Reserves</span>
+            <span class="stat-value" id="statTotalBalance">$0.00</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fef3c7;color:#d97706;">
+            <i class="bi bi-activity"></i>
+          </div>
+          <div class="stat-info">
+            <span class="stat-label">Today's Transactions</span>
+            <span class="stat-value" id="statTodayVolume">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions Card -->
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="bi bi-clock-history" style="color:var(--primary);"></i> Recent Transaction Stream</h3>
+          <button class="btn btn-outline" style="padding:0.35rem 0.75rem;font-size:0.85rem;" onclick="document.querySelector('[data-view=viewTransactions]').click()">View All</button>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Date & Time</th>
+                  <th>Account Number</th>
+                  <th>Operation Type</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                </tr>
+              </thead>
+              <tbody id="recentTxnBody">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. CUSTOMERS VIEW -->
+    <section id="viewCustomers" class="view-panel" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Customer Management</h1>
+          <p>Onboard customers and manage contact profiles</p>
+        </div>
+        <button class="btn btn-primary" data-open-modal="modalNewCustomer"><i class="bi bi-person-plus"></i> Add New Customer</button>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Customer Name</th>
+                  <th>Email</th>
+                  <th>Phone Number</th>
+                  <th>Web Portal User</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ACCOUNTS VIEW -->
+    <section id="viewAccounts" class="view-panel" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Bank Accounts Directory</h1>
+          <p>Active deposit and current accounts across customers</p>
+        </div>
+        <button class="btn btn-primary" data-open-modal="modalNewAccount"><i class="bi bi-plus-circle"></i> Open New Account</button>
+      </div>
+
+      <div class="accounts-grid" id="accountsGrid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- 4. TRANSACTIONS VIEW -->
+    <section id="viewTransactions" class="view-panel" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Transaction Statements & Audit Logs</h1>
+          <p>Complete ledger of deposits, withdrawals, and wire transfers</p>
+        </div>
+        <div class="actions-bar" style="margin-bottom:0;">
+          <button class="btn btn-success" data-open-modal="modalDeposit"><i class="bi bi-arrow-down-circle"></i> Deposit</button>
+          <button class="btn btn-danger" data-open-modal="modalWithdraw"><i class="bi bi-arrow-up-circle"></i> Withdraw</button>
+          <button class="btn btn-primary" data-open-modal="modalTransfer"><i class="bi bi-send"></i> Transfer</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body" style="padding:0;">
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Date & Time</th>
+                  <th>Account Number</th>
+                  <th>Type</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Balance After</th>
+                </tr>
+              </thead>
+              <tbody id="txnsTableBody">
+                <!-- Injected via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- Modal: New Customer -->
+  <div class="modal-overlay" id="modalNewCustomer">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="bi bi-person-plus text-primary"></i> Register New Customer</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="formNewCustomer">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="custName" class="form-control" placeholder="e.g. Robert Johnson" required>
+          </div>
+          <div class="form-group">
+            <label>Email Address *</label>
+            <input type="email" id="custEmail" class="form-control" placeholder="e.g. robert.j@example.com" required>
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="text" id="custPhone" class="form-control" placeholder="e.g. +1-555-0811" required>
+          </div>
+          <div class="form-group">
+            <label>Physical Address</label>
+            <input type="text" id="custAddress" class="form-control" placeholder="Street, City, State">
+          </div>
+          <div class="form-group">
+            <label>Web Portal Username (Optional)</label>
+            <input type="text" id="custUsername" class="form-control" placeholder="e.g. rjohnson">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Open Account -->
+  <div class="modal-overlay" id="modalNewAccount">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="bi bi-plus-circle text-primary"></i> Open New Bank Account</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="formNewAccount">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Select Customer Account Holder *</label>
+            <select id="newAccountCustomerSelect" class="form-select" required>
+              <!-- Injected dynamically -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Account Type *</label>
+            <select id="newAccountType" class="form-select" required>
+              <option value="SAVINGS">SAVINGS Account</option>
+              <option value="CURRENT">CURRENT Account</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Initial Opening Deposit ($)</label>
+            <input type="number" step="0.01" min="0" id="newAccountDeposit" class="form-control" placeholder="0.00" value="0.00">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Open Account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Deposit -->
+  <div class="modal-overlay" id="modalDeposit">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:var(--accent);"><i class="bi bi-arrow-down-circle"></i> Cash Deposit</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="formDeposit">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Target Account *</label>
+            <select id="depositAccountSelect" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Deposit Amount ($) *</label>
+            <input type="number" step="0.01" min="0.01" id="depositAmount" class="form-control" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>Transaction Memo / Note</label>
+            <input type="text" id="depositNote" class="form-control" placeholder="Branch cash deposit">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-success">Confirm Deposit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Withdraw -->
+  <div class="modal-overlay" id="modalWithdraw">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:var(--danger);"><i class="bi bi-arrow-up-circle"></i> Cash Withdrawal</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="formWithdraw">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Source Account *</label>
+            <select id="withdrawAccountSelect" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Withdrawal Amount ($) *</label>
+            <input type="number" step="0.01" min="0.01" id="withdrawAmount" class="form-control" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>Transaction Memo / Note</label>
+            <input type="text" id="withdrawNote" class="form-control" placeholder="ATM / Teller withdrawal">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Withdrawal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Transfer -->
+  <div class="modal-overlay" id="modalTransfer">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="color:var(--primary);"><i class="bi bi-send"></i> Inter-Account Transfer</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <form id="formTransfer">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Source Account *</label>
+            <select id="transferFromSelect" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label>Destination 12-Digit Account Number *</label>
+            <input type="text" id="transferToInput" class="form-control" placeholder="102030405060" required>
+          </div>
+          <div class="form-group">
+            <label>Transfer Amount ($) *</label>
+            <input type="number" step="0.01" min="0.01" id="transferAmount" class="form-control" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>Transfer Memo</label>
+            <input type="text" id="transferNote" class="form-control" placeholder="Wire transfer / Bill payment">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary">Execute Transfer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toasts Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div>&copy; 2026 Apex Bank Management System. All rights reserved.</div>
+    <div><i class="bi bi-shield-check" style="color:var(--accent);"></i> Dual Mode: Spring Boot REST API &amp; Standalone Offline Storage</div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/mockData.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

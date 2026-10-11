@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Admin Dashboard - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Administrator Dashboard</h2>
+            <p class="text-muted mb-0">System Overview & Centralized Banking Operations</p>
+        </div>
+        <div class="btn-group">
+            <a th:href="@{/customers/new}" class="btn btn-outline-primary"><i class="bi bi-person-plus me-1"></i> New Customer</a>
+            <a th:href="@{/accounts/new}" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Open Account</a>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Customers</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.totalCustomers}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Accounts</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.totalAccounts}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info me-3">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Total Bank Balance</span>
+                        <h3 class="fw-bold mb-0" th:text="'$' + ${#numbers.formatDecimal(summary.totalBalance, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="bi bi-activity"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Today's Transactions</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.todayTransactionCount}">0</h3>
+                        <small class="text-muted" th:text="'Vol: $' + ${#numbers.formatDecimal(summary.todayTransactionVolume, 1, 'COMMA', 2, 'POINT')}">Vol: $0.00</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Middle Row: Breakdown & Shortcuts -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-pie-chart me-2 text-primary"></i>Account Status</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span><i class="bi bi-check-circle text-success me-2"></i>Active Accounts</span>
+                        <span class="badge badge-active" th:text="${summary.activeAccounts}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span><i class="bi bi-pause-circle text-warning me-2"></i>Frozen Accounts</span>
+                        <span class="badge badge-frozen" th:text="${summary.frozenAccounts}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-x-circle text-danger me-2"></i>Closed Accounts</span>
+                        <span class="badge badge-closed" th:text="${summary.closedAccounts}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-layers me-2 text-success"></i>Account Types</span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span><i class="bi bi-piggy-bank text-info me-2"></i>Savings Accounts</span>
+                        <span class="badge bg-info text-dark" th:text="${summary.savingsAccountsCount}">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center py-2">
+                        <span><i class="bi bi-briefcase text-secondary me-2"></i>Current Accounts</span>
+                        <span class="badge bg-secondary" th:text="${summary.currentAccountsCount}">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12 col-lg-4">
+            <div class="card bank-card h-100">
+                <div class="card-header bg-transparent">
+                    <span class="fw-bold"><i class="bi bi-lightning-charge me-2 text-warning"></i>Quick Operations</span>
+                </div>
+                <div class="card-body d-flex flex-column gap-2 justify-content-center">
+                    <a th:href="@{/transactions/deposit}" class="btn btn-outline-success text-start py-2">
+                        <i class="bi bi-arrow-down-circle me-2"></i> Process Cash Deposit
+                    </a>
+                    <a th:href="@{/transactions/withdraw}" class="btn btn-outline-danger text-start py-2">
+                        <i class="bi bi-arrow-up-circle me-2"></i> Process Cash Withdrawal
+                    </a>
+                    <a th:href="@{/transactions/transfer}" class="btn btn-outline-primary text-start py-2">
+                        <i class="bi bi-send me-2"></i> Inter-Account Transfer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="card bank-card">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent System Transactions</h5>
+            <a th:href="@{/transactions/history}" class="btn btn-sm btn-link text-decoration-none">View All History &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Date & Time</th>
+                            <th>Account</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tx : ${recentTransactions}">
+                            <td class="ps-4 fw-semibold text-primary" th:text="${tx.referenceNo}">TXN-123</td>
+                            <td th:text="${#temporals.format(tx.dateTime, 'yyyy-MM-dd HH:mm')}">2026-10-11</td>
+                            <td th:text="${tx.account.accountNumber}">101010101010</td>
+                            <td>
+                                <span th:if="${tx.type.name() == 'DEPOSIT'}" class="badge badge-deposit"><i class="bi bi-arrow-down me-1"></i>Deposit</span>
+                                <span th:if="${tx.type.name() == 'WITHDRAWAL'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up me-1"></i>Withdrawal</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_DEBIT'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up-right me-1"></i>Transfer Debit</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_CREDIT'}" class="badge badge-transfer"><i class="bi bi-arrow-down-left me-1"></i>Transfer Credit</span>
+                            </td>
+                            <td class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td class="text-muted" th:text="'$' + ${#numbers.formatDecimal(tx.balanceAfter, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span th:if="${tx.status.name() == 'SUCCESS'}" class="badge bg-success">Success</span>
+                                <span th:if="${tx.status.name() == 'FAILED'}" class="badge bg-danger">Failed</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentTransactions)}">
+                            <td colspan="7" class="text-center py-4 text-muted">No transactions found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

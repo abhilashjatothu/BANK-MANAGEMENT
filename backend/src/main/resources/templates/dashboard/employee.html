@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Employee Dashboard - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Staff Portal</h2>
+            <p class="text-muted mb-0">Customer Services & Daily Branch Desk</p>
+        </div>
+        <div class="btn-group">
+            <a th:href="@{/customers/new}" class="btn btn-outline-primary"><i class="bi bi-person-plus me-1"></i> New Customer</a>
+            <a th:href="@{/accounts/new}" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Open Account</a>
+        </div>
+    </div>
+
+    <!-- Stat Cards Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-primary bg-opacity-10 text-primary me-3">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Branch Customers</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.totalCustomers}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-success bg-opacity-10 text-success me-3">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Active Accounts</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.activeAccounts}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-info bg-opacity-10 text-info me-3">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Today's Transactions</span>
+                        <h3 class="fw-bold mb-0" th:text="${summary.todayTransactionCount}">0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card bg-white p-3">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-warning bg-opacity-10 text-warning me-3">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small fw-semibold text-uppercase">Today's Volume</span>
+                        <h3 class="fw-bold mb-0" th:text="'$' + ${#numbers.formatDecimal(summary.todayTransactionVolume, 1, 'COMMA', 2, 'POINT')}">$0.00</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <a th:href="@{/transactions/deposit}" class="card stat-card text-decoration-none bg-white p-3 border-start border-4 border-success">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-arrow-down-circle fs-2 text-success me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Deposit Funds</h5>
+                        <small class="text-muted">Process customer cash deposit</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/transactions/withdraw}" class="card stat-card text-decoration-none bg-white p-3 border-start border-4 border-danger">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-arrow-up-circle fs-2 text-danger me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Withdraw Funds</h5>
+                        <small class="text-muted">Process customer cash withdrawal</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/transactions/transfer}" class="card stat-card text-decoration-none bg-white p-3 border-start border-4 border-primary">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-send fs-2 text-primary me-3"></i>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0">Fund Transfer</h5>
+                        <small class="text-muted">Execute wire transfer between accounts</small>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Transactions Table -->
+    <div class="card bank-card">
+        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Teller Activity</h5>
+            <a th:href="@{/transactions/history}" class="btn btn-sm btn-link text-decoration-none">Full History &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Reference</th>
+                            <th>Date & Time</th>
+                            <th>Account</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="tx : ${recentTransactions}">
+                            <td class="ps-4 fw-semibold text-primary" th:text="${tx.referenceNo}">TXN-123</td>
+                            <td th:text="${#temporals.format(tx.dateTime, 'yyyy-MM-dd HH:mm')}">2026-10-11</td>
+                            <td th:text="${tx.account.accountNumber}">101010101010</td>
+                            <td>
+                                <span th:if="${tx.type.name() == 'DEPOSIT'}" class="badge badge-deposit"><i class="bi bi-arrow-down me-1"></i>Deposit</span>
+                                <span th:if="${tx.type.name() == 'WITHDRAWAL'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up me-1"></i>Withdrawal</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_DEBIT'}" class="badge badge-withdrawal"><i class="bi bi-arrow-up-right me-1"></i>Transfer Debit</span>
+                                <span th:if="${tx.type.name() == 'TRANSFER_CREDIT'}" class="badge badge-transfer"><i class="bi bi-arrow-down-left me-1"></i>Transfer Credit</span>
+                            </td>
+                            <td class="fw-bold" th:text="'$' + ${#numbers.formatDecimal(tx.amount, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td class="text-muted" th:text="'$' + ${#numbers.formatDecimal(tx.balanceAfter, 1, 'COMMA', 2, 'POINT')}">$0.00</td>
+                            <td>
+                                <span th:if="${tx.status.name() == 'SUCCESS'}" class="badge bg-success">Success</span>
+                                <span th:if="${tx.status.name() == 'FAILED'}" class="badge bg-danger">Failed</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentTransactions)}">
+                            <td colspan="7" class="text-center py-4 text-muted">No transactions found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

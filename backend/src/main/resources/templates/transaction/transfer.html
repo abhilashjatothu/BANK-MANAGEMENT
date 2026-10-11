@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Fund Transfer - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card bank-card">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0 text-primary">
+                        <i class="bi bi-send me-2"></i> Inter-Account Fund Transfer
+                    </h4>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle">Atomic Wire Transfer</span>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/transactions/transfer}" th:object="${transferForm}" method="post">
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <!-- Source Account Selection -->
+                        <div class="mb-3">
+                            <label for="fromAccountNumber" class="form-label fw-semibold">From Account (Source) <span class="text-danger">*</span></label>
+                            
+                            <div th:if="${userAccounts != null && !#lists.isEmpty(userAccounts)}">
+                                <select id="fromAccountNumber" th:field="*{fromAccountNumber}" class="form-select"
+                                        th:classappend="${#fields.hasErrors('fromAccountNumber')} ? 'is-invalid' : ''">
+                                    <option value="">-- Select Source Account --</option>
+                                    <option th:each="acc : ${userAccounts}"
+                                            th:value="${acc.accountNumber}"
+                                            th:text="${acc.accountNumber} + ' (' + ${acc.accountType} + ' - Bal: $' + ${#numbers.formatDecimal(acc.balance, 1, 'COMMA', 2, 'POINT')} + ')'"
+                                            th:selected="${acc.accountNumber == transferForm.fromAccountNumber}">
+                                        101010101010 (SAVINGS - $5,000)
+                                    </option>
+                                </select>
+                            </div>
+                            
+                            <div th:if="${userAccounts == null || #lists.isEmpty(userAccounts)}">
+                                <input type="text" id="fromAccountNumberInput" th:field="*{fromAccountNumber}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('fromAccountNumber')} ? 'is-invalid' : ''" placeholder="Source 12-digit account number">
+                            </div>
+
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fromAccountNumber')}" th:errors="*{fromAccountNumber}">Source account is required</div>
+                        </div>
+
+                        <!-- Destination Account -->
+                        <div class="mb-3">
+                            <label for="toAccountNumber" class="form-label fw-semibold">To Account (Destination 12-digit number) <span class="text-danger">*</span></label>
+                            <input type="text" id="toAccountNumber" th:field="*{toAccountNumber}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('toAccountNumber')} ? 'is-invalid' : ''" placeholder="Destination 12-digit account number">
+                            <small class="text-muted">Must be an active account different from the source account.</small>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('toAccountNumber')}" th:errors="*{toAccountNumber}">Destination account is required</div>
+                        </div>
+
+                        <!-- Amount -->
+                        <div class="mb-3">
+                            <label for="amount" class="form-label fw-semibold">Transfer Amount ($) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light fw-bold">$</span>
+                                <input type="number" step="0.01" min="0.01" id="amount" th:field="*{amount}" class="form-control form-control-lg fw-bold"
+                                       th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid' : ''" placeholder="0.00">
+                            </div>
+                            <small class="text-muted">Source account balance must be sufficient.</small>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('amount')}" th:errors="*{amount}">Amount error</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold">Transfer Memo / Description</label>
+                            <input type="text" id="description" th:field="*{description}" class="form-control"
+                                   th:classappend="${#fields.hasErrors('description')} ? 'is-invalid' : ''" placeholder="e.g. Rent Payment, Family Support, Invoice #401">
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Description error</div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg fw-semibold shadow-sm">
+                                <i class="bi bi-send-check me-1"></i> Send Transfer Now
+                            </button>
+                            <a th:href="@{/dashboard}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

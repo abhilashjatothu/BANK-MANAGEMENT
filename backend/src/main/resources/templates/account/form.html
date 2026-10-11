@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Open Bank Account - Apex Bank</title>
+</head>
+<body>
+<div th:fragment="content">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="card bank-card">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="fw-bold mb-0">
+                        <i class="bi bi-plus-circle me-2 text-primary"></i> Open New Bank Account
+                    </h4>
+                    <a th:href="@{/accounts}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Accounts
+                    </a>
+                </div>
+                <div class="card-body p-4">
+                    <form th:action="@{/accounts/new}" th:object="${accountForm}" method="post">
+                        <!-- CSRF Token -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <!-- Customer Selection -->
+                        <div class="mb-3">
+                            <label for="customerId" class="form-label fw-semibold">Customer Account Holder <span class="text-danger">*</span></label>
+                            <select id="customerId" th:field="*{customerId}" class="form-select"
+                                    th:classappend="${#fields.hasErrors('customerId')} ? 'is-invalid' : ''">
+                                <option value="">-- Select Customer --</option>
+                                <option th:each="c : ${customers}"
+                                        th:value="${c.customerId}"
+                                        th:text="${c.name} + ' (' + ${c.email} + ')'"
+                                        th:selected="${c.customerId == accountForm.customerId}">
+                                    Customer Name (email)
+                                </option>
+                            </select>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('customerId')}" th:errors="*{customerId}">Customer is required</div>
+                        </div>
+
+                        <!-- Account Type -->
+                        <div class="mb-3">
+                            <label for="accountType" class="form-label fw-semibold">Account Type <span class="text-danger">*</span></label>
+                            <select id="accountType" th:field="*{accountType}" class="form-select"
+                                    th:classappend="${#fields.hasErrors('accountType')} ? 'is-invalid' : ''">
+                                <option value="">-- Select Type --</option>
+                                <option th:each="type : ${accountTypes}"
+                                        th:value="${type}"
+                                        th:text="${type}">
+                                    SAVINGS
+                                </option>
+                            </select>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('accountType')}" th:errors="*{accountType}">Type is required</div>
+                        </div>
+
+                        <!-- Initial Deposit Amount -->
+                        <div class="mb-3">
+                            <label for="initialDeposit" class="form-label fw-semibold">Initial Deposit Amount ($) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">$</span>
+                                <input type="number" step="0.01" min="0.00" id="initialDeposit" th:field="*{initialDeposit}" class="form-control"
+                                       th:classappend="${#fields.hasErrors('initialDeposit')} ? 'is-invalid' : ''" placeholder="0.00">
+                            </div>
+                            <small class="text-muted">Enter 0.00 if opening without immediate initial cash deposit.</small>
+                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('initialDeposit')}" th:errors="*{initialDeposit}">Deposit error</div>
+                        </div>
+
+                        <!-- Initial Account Status -->
+                        <div class="mb-4">
+                            <label for="status" class="form-label fw-semibold">Initial Status</label>
+                            <select id="status" th:field="*{status}" class="form-select">
+                                <option th:each="st : ${accountStatuses}"
+                                        th:value="${st}"
+                                        th:text="${st}">
+                                    ACTIVE
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a th:href="@{/accounts}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> Open Account
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
