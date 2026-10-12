@@ -1,5 +1,5 @@
 // Apex Bank Standalone Mock Dataset
-window.ApexMockData = {
+export const mockData = {
   systemStats: {
     totalCustomers: 4,
     totalAccounts: 6,
